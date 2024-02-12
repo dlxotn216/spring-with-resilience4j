@@ -1,0 +1,72 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  data:
+    redis:
+      host: localhost
+      port: 16379
+      password: password
+      timeout: 60000
+      clientName: user-service
+  datasource:
+    hikari:
+      jdbc-url: jdbc:h2:~/resilence4j-spring
+      username: taesu
+      driver-class-name: org.h2.Driver
+    url: ${spring.datasource.hikari.jdbc-url}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 20
+        sliding-window-type: TIME_BASED
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        eventConsumerBufferSize: 10
+        registerHealthIndicator: true
+        ignoreExceptions:
+          - io.taesu.resilience4jspring.app.exception.InvalidStateException
+      shared:
+        slidingWindowSize: 20
+        sliding-window-type: TIME_BASED
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 30
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        eventConsumerBufferSize: 10
+        registerHealthIndicator: true
+        ignoreExceptions:
+          - io.taesu.resilience4jspring.app.exception.InvalidStateException
+    instances:
+      USERS:
+        base-config: shared
+        slidingWindowSize: 10
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+  health:
+    diskspace:
+      enabled: false
+    circuitbreakers:
+      enabled: true
+
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      distribution.percentiles-histogram.http.server.requests: true
+      distribution.percentiles-histogram.resilience4j.circuitbreaker.calls: true
