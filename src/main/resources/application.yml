@@ -42,12 +42,14 @@ resilience4j:
         automaticTransitionFromOpenToHalfOpenEnabled: true
         eventConsumerBufferSize: 10
         registerHealthIndicator: true
-        ignoreExceptions:
-          - io.taesu.resilience4jspring.app.exception.InvalidStateException
+        ignore-exception-predicate: io.taesu.resilience4jspring.app.circuit.DefaultIgnoreExceptionPredicate
     instances:
       USERS:
         base-config: shared
         slidingWindowSize: 10
+      LETTUCE_CACHE:
+        base-config: shared
+        record-failure-predicate: io.taesu.resilience4jspring.app.circuit.LettuceCacheIgnoreExceptionPredicate
 
 
 
